@@ -20,6 +20,11 @@ The platform is fully orchestrated across a distributed cloud architecture:
 
 - **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
 
+### System Architecture & Data Pipeline
+This system architecture utilizes a decoupled microservices-style approach. The Dark Blue nodes handle high-frequency mathematical projections, while the Light Blue nodes manage real-time UI synchronization. 
+
+![BIP Architecture Preview](./assets/system-architecture-and-data-pipeline-diagram.png)
+
 ### Project Architecture Diagram
 ![BIP Architecture Preview](./assets/bioprocess-high-architecture-diagram.png)
 

@@ -1,0 +1,15 @@
+# --- Core Framework ---
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# --- Data Processing ---
+pandas>=2.2.0
+numpy>=1.26.0
+
+# --- Utilities ---
+python-multipart>=0.0.9
+anyio>=4.0.0
+starlette>=0.36.0
+
+# --- HTTP Client (For Testing) ---
+httpx>=0.26.0

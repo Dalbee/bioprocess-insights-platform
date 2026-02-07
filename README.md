@@ -21,33 +21,12 @@ The platform is fully orchestrated across a distributed cloud architecture:
 - **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
 
 ### Project Architecture Diagram
+![BIP Dashboard Preview](./assets/dashboard-preview.png)
 
-```graph TD
-        subgraph Data_Layer [Data Source]
-            A[(bioreactor-yields.csv)]
-        end
-
-        subgraph Backend_Layer [FastAPI - Render]
-            B[CSV Parser] --> C[Global Index Tracker]
-            C --> D{Predictive Engine}
-            D -->|Linear Regression| E[Digital Twin Projection]
-            D -->|Math Logic| F[Health Score & Anomalies]
-        end
-
-            subgraph Frontend_Layer [React - Vercel]
-            G[Sub-second Polling] --> H[Real-time Dashboard]
-            H --> I[Recharts Visualization]
-            H --> J[Anomaly Alerts]
-        end
-
-        A --> B
-        E --> G
-        F --> G
-```    
 ---
 
 ## 📸 Dashboard Preview
-![BIP Dashboard Preview](./assets/dashboard-preview.png)
+![BIP Architecture Preview](./assets/bioprocess high architecture diagram.png)
 
 ---
 

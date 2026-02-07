@@ -21,12 +21,12 @@ The platform is fully orchestrated across a distributed cloud architecture:
 - **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
 
 ### Project Architecture Diagram
-![BIP Dashboard Preview](./assets/dashboard-preview.png)
+![BIP Architecture Preview](./assets/bioprocess-high-architecture-diagram.png)
 
 ---
 
 ## 📸 Dashboard Preview
-![BIP Architecture Preview](./assets/bioprocess high architecture diagram.png)
+![BIP Dashboard Preview](./assets/dashboard-preview.png)
 
 ---
 

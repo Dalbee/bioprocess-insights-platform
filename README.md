@@ -5,6 +5,11 @@
 ## 🧪 Project Overview
 This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It bridges the gap between raw CSV historical data and live operational visibility.
 
+
+## 📸 Dashboard Preview
+![BIP Dashboard Preview](./assets/dashboard-preview.png)
+
+
 ### 🚀 Key Features
 - **Real-time API:** Built with FastAPI to stream multivariate sensor data every 1000ms.
 - **Interactive Dashboard:** Live charting of Temperature, pH, and DO2 using React & Recharts.
@@ -51,7 +56,7 @@ In a new terminal, navigate to the frontend directory:
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 ---

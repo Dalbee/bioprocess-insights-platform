@@ -1,31 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Activity, AlertCircle, Droplets, Thermometer, Wind, CheckCircle, Download } from 'lucide-react';
+
+/** * API CONFIGURATION:
+ * Dynamically switches between the local development server and the 
+ * production cloud server (Render). VITE_API_URL is set in the 
+ * deployment platform's environment variables.
+ */
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
 
 function App() {
   const [history, setHistory] = useState<any[]>([]);
   const [latest, setLatest] = useState<any>(null);
 
   useEffect(() => {
+    // Polling mechanism: Mimics a WebSocket stream by requesting 
+    // updates every 1000ms from the FastAPI simulation engine.
     const timer = setInterval(async () => {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/api/v1/process-data');
+        const res = await axios.get(`${API_BASE_URL}/api/v1/process-data`);
         const newData = res.data.data;
+      
         if (newData) {
           setLatest(newData);
+        
+          // Sliding Window: Keeps only the last 20 data points to 
+          // maintain chart performance and visual clarity.
           setHistory(prev => [...prev.slice(-19), newData]);
         }
       } catch (e) {
-        console.log("Searching for backend...");
-      }
+        // Graceful degradation: Logs error without crashing the UI
+        console.log("Searching for backend service...");
+    }
     }, 1000);
-    return () => clearInterval(timer);
+  
+    return () => clearInterval(timer); // Memory cleanup on component unmount
   }, []);
 
+  /**
+  * DATA PORTABILITY:
+  * Directly triggers the FastAPI FileResponse endpoint to stream 
+  * the source CSV to the user's browser.
+  */
   const handleExport = () => {
-    // This triggers the browser to call the backend download route
-    window.location.href = 'http://127.0.0.1:8000/api/v1/download-report';
+    window.location.href = `${API_BASE_URL}/api/v1/download-report`;
   };
 
   return (
@@ -51,7 +70,8 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          {/* Anomaly Alert: Re-added here */}
+          {/* Anomaly Alert: CONDITIONAL UI: Renders a high-priority alert only if the 
+              backend flags the current data as 'Out of Spec' (OOS). */}
           {latest?.is_anomaly && (
             <div style={{ 
             background: '#450a0a', 

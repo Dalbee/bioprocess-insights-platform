@@ -5,22 +5,43 @@
 ## 🧪 Project Overview
 This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It bridges the gap between raw CSV historical data and live operational visibility.
 
+---
+
+## 🌍 Live Deployment
+The platform is fully orchestrated across a distributed cloud architecture:
+
+- **Frontend Dashboard:** [https://bioprocess-insights-platform.vercel.app/] (Hosted on Vercel)
+- **Backend API:** [https://bioprocess-insights-platform.onrender.com] (Hosted on Render)
+
+### 🏗️ Cloud Architecture
+- **CI/CD:** Automatic deployments triggered via GitHub Actions.
+
+- **Environment Management:** Utilizes `VITE_API_URL` environment variables to dynamically switch between local development and production API endpoints.
+
+- **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
+
+---
 
 ## 📸 Dashboard Preview
 ![BIP Dashboard Preview](./assets/dashboard-preview.png)
 
+---
 
 ### 🚀 Key Features
 - **Real-time API:** Built with FastAPI to stream multivariate sensor data every 1000ms.
+- **Digital Twin Projection:** Predictive modeling that anticipates temperature shifts before they occur.
 - **Interactive Dashboard:** Live charting of Temperature, pH, and DO2 using React & Recharts.
 - **Batch Health Scoring:** Algorithmic calculation of batch viability based on setpoint deviations.
 - **Anomaly Detection:** Automated flagging of out-of-spec batches (e.g., thermal spikes or agitation failure).
 - **Data Portability:** One-click CSV export of the bioreactor yield reports.
 
+---
+
 ## 🛠️ Tech Stack
 - **Backend:** Python 3.12, FastAPI, Pandas
 - **Frontend:** React (TypeScript), Recharts, Lucide-React
 - **Styling:** CSS-in-JS (Modern Dark-Mode UI)
+
 
 ---
 
@@ -31,7 +52,6 @@ This platform simulates a live connection to a **Sartorius Biostat®** controlle
 - Node.js (v18+)
 - npm or yarn
 
----
 
 ### 2. Backend Setup
 Navigate to the `backend` directory, create a virtual environment, and install dependencies:
@@ -48,7 +68,6 @@ pip install -r requirements.txt
 python main.py
 
 ```
---- 
 
 ### 3. Frontend Setup
 In a new terminal, navigate to the frontend directory:
@@ -59,9 +78,13 @@ npm install
 npm run dev
 ```
 
----
 
-## 🌐 Local Access
+### 4. Code Standards & Quality
+- **Type Safety:** Utilizes strict TypeScript interfaces for multivariate sensor data.
+- **Environment Awareness:** Implemented dynamic API routing to switch between `localhost` and `production` cloud endpoints automatically.
+
+
+###  5. 🌐 Local Access
 Once both services are started, the platform is available at:
 
 | Component | URL |
@@ -89,7 +112,7 @@ One of the primary challenges was managing two distinct environments (Python/Fas
 
 ### 2. Relative Path Resolution
 Since the backend service runs from within the `/backend` folder but needs to access data in the root-level `/data` folder, standard file paths would often break.
-- **Solution:** Used Python's `os.path.abspath(__file__)` to create a dynamic `BASE_DIR`. This allows the application to resolve the CSV path correctly regardless of whether the script is launched from the root or the subfolder.
+- **Solution:** Used Python's `os.path.abspath(__file__)` to create a dynamic `BASE_DIR`. This allows the application to resolve the CSV path correctly regardless of whether the script is launched from the root or the subfolder / (regardless of the environment).
 
 ### 3. Real-Time Data Simulation
 To mimic a live Biostat® controller without having a physical bioreactor connected, I implemented a global index tracker in FastAPI.
@@ -99,15 +122,21 @@ To mimic a live Biostat® controller without having a physical bioreactor connec
 
 ## 🧠 Business Logic & Calculations
 
-### Batch Health Score
+### 1. Batch Health Score
 The health score is a simulated Quality Index ($Q$) calculated based on the deviation from the ideal setpoints ($T_{set} = 37°C$, $pH_{set} = 7.0$):
 
 $$Health = 100 - (|T_{actual} - 37| \times 15) - (|pH_{actual} - 7| \times 40)$$
 
-### Anomaly Triggers
+### 2. Anomaly Triggers
 A batch is flagged as an Anomaly if:
 - Temperature > $40.0°C$
 - Impeller Speed < $100.0\ RPM$
+
+### 3. Digital Twin & Predictive Analytics
+The platform features a **Digital Twin** layer that uses a moving-window linear regression to predict process trends:
+- **Calibration Phase:** Upon startup, the system enters a 5-second "Warm-up" to populate the sliding buffer required for accurate slope calculation.
+- **Trend Analysis:** Predicts Temperature 60 seconds into the future based on the current $\Delta T / \Delta t$.
+- **Predictive Alarms:** Early warning system that triggers if the Digital Twin deviates from the safety setpoints before the physical sensors do /reach the threshold.
 
 ---
 

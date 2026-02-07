@@ -70,6 +70,23 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          {/* DIGITAL TWIN STATUS: Signals when the predictive engine has enough history to project trends */}
+          <div style={{ 
+            background: latest?.digital_twin_temp ? '#1e1b4b' : '#0f172a', 
+            color: latest?.digital_twin_temp ? '#a5b4fc' : '#475569', 
+            padding: '10px 20px', 
+            borderRadius: '10px', 
+            border: latest?.digital_twin_temp ? '1px solid #4338ca' : '1px solid #1e293b', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            fontWeight: 600,
+            fontSize: '0.9rem'
+          }}>
+            <Activity size={18} color={latest?.digital_twin_temp ? "#818cf8" : "#475569"} />
+            {latest?.digital_twin_temp ? "TWIN ACTIVE" : "CALIBRATING TWIN..."}
+          </div>
+
           {/* Anomaly Alert: CONDITIONAL UI: Renders a high-priority alert only if the 
               backend flags the current data as 'Out of Spec' (OOS). */}
           {latest?.is_anomaly && (
@@ -84,7 +101,7 @@ function App() {
             gap: '8px',
             fontWeight: 600,
             fontSize: '0.9rem',
-            animation: 'pulse 2s infinite' // Optional: adds that high-stakes blinking effect
+            animation: 'pulse 2s infinite' 
           }}>
             <AlertCircle size={18} />
             ANOMALY DETECTED
@@ -116,23 +133,34 @@ function App() {
       <div style={{ 
         background: '#0f172a', padding: '24px', borderRadius: '16px', 
         border: '1px solid #1e293b', flex: 1, display: 'flex', flexDirection: 'column',
-        minHeight: 0 // Crucial for flex child resizing
+        minHeight: 0 
       }}>
-        <h3 style={{ marginTop: 0, color: '#94a3b8' }}>Real-time Bioprocess Trends (Temperature)</h3>
+        <h3 style={{ marginTop: 0, color: '#94a3b8' }}>Real-time Bioprocess Trends & Digital Twin Projection</h3>
         <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={history}>
               <defs>
+                {/* Original Blue Gradient */}
                 <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/>
+                </linearGradient>
+                {/* New Digital Twin Gradient (Purple/Indigo) */}
+                <linearGradient id="colorTwin" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#818cf8" stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor="#818cf8" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
               <XAxis dataKey="timestamp" stroke="#475569" tick={{fontSize: 12}} />
               <YAxis domain={['auto', 'auto']} stroke="#475569" tick={{fontSize: 12}} />
               <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '8px' }} />
+              
+              {/* PRIMARY DATA: The actual CSV sensor data */}
               <Area type="monotone" dataKey="Temperature" stroke="#38bdf8" fillOpacity={1} fill="url(#colorTemp)" strokeWidth={3} isAnimationActive={false} />
+              
+              {/* DIGITAL TWIN: Predictive projection from the backend buffer */}
+              <Area type="monotone" dataKey="digital_twin_temp" stroke="#818cf8" strokeDasharray="5 5" fill="url(#colorTwin)" strokeWidth={2} isAnimationActive={false} name="Twin Prediction" />
             </AreaChart>
           </ResponsiveContainer>
         </div>

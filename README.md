@@ -81,6 +81,22 @@ Once both services are started, the platform is available at:
 
 ---
 
+## 🛠️ Implementation Highlights & Challenges
+
+### 1. Full-Stack Monorepo Architecture
+One of the primary challenges was managing two distinct environments (Python/FastAPI and Node/Vite) within a single repository. 
+- **Solution:** Implemented a structured directory approach, isolating the `venv` within the `/backend` and `node_modules` within the `/frontend`. This ensures that dependency conflicts are non-existent and the root directory remains clean.
+
+### 2. Relative Path Resolution
+Since the backend service runs from within the `/backend` folder but needs to access data in the root-level `/data` folder, standard file paths would often break.
+- **Solution:** Used Python's `os.path.abspath(__file__)` to create a dynamic `BASE_DIR`. This allows the application to resolve the CSV path correctly regardless of whether the script is launched from the root or the subfolder.
+
+### 3. Real-Time Data Simulation
+To mimic a live Biostat® controller without having a physical bioreactor connected, I implemented a global index tracker in FastAPI.
+- **Logic:** The API iterates through historical CSV rows on every request, calculates "derived metrics" (Health Score) on the fly, and loops back to the start, providing a continuous "live" data stream for the frontend to consume.
+
+---
+
 ## 🧠 Business Logic & Calculations
 
 ### Batch Health Score

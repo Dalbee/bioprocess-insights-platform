@@ -1,9 +1,9 @@
-# --- Python (Backend) ---
+# Ignore the environment inside the backend folder
 backend/venv/
-backend/__pycache__/
-backend/*.pyc
-backend/.env
-backend/.pytest_cache/
+
+# Also ignore Python cache files
+**/__pycache__/
+*.pyc
 
 # --- React (Frontend) ---
 frontend/node_modules/

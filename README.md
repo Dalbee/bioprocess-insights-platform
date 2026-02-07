@@ -34,8 +34,11 @@ Navigate to the `backend` directory, create a virtual environment, and install d
 ```bash
 cd backend
 python -m venv venv
-# Activate venv:
-# Windows: .\venv\Scripts\activate | Mac/Linux: source venv/bin/activate
+# Windows:
+.\venv\Scripts\activate 
+# Mac/Linux:
+source venv/bin/activate
+
 pip install -r requirements.txt
 python main.py
 
@@ -52,13 +55,25 @@ npm start
 ```
 
 ---
-## 📡 API Documentation
 
+## 🌐 Local Access
+Once both services are started, the platform is available at:
+
+| Component | URL |
+| :--- | :--- |
+| **BIP Dashboard (Frontend)** | `http://localhost:5173` |
+| **Data Stream (API)** | `http://127.0.0.1:8000/api/v1/process-data` |
+| **Interactive API Docs** | `http://127.0.0.1:8000/docs` |
+
+---
+
+## 📡 API Documentation
 
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
-| `/api/v1/process-data` | `GET` | Returns the latest bioreactor telemetry (Temp, pH, DO2), calculated health score, and anomaly flags. |
-| `/api/v1/download-report` | `GET` | Streams the full `bioreactor-yields.csv` source file for local data analysis and reporting. |
+| `/api/v1/process-data` | `GET` | **Primary Data Stream:** Returns real-time telemetry, health scores, and anomaly flags. |
+| `/api/v1/download-report` | `GET` | **Export Engine:** Streams the full `bioreactor-yields.csv` file for offline analysis. |
+
 ---
 
 ## 🧠 Business Logic & Calculations

@@ -66,3 +66,69 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* --- GxP ALARM ANIMATIONS --- */
+
+@keyframes alarm-pulse {
+  0% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(127, 29, 29, 0.7); 
+  }
+  50% { 
+    transform: scale(1.05); 
+    box-shadow: 0 0 0 10px rgba(127, 29, 29, 0); 
+  }
+  100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(127, 29, 29, 0); 
+  }
+}
+
+/* This class is triggered by the latest?.health_score logic in App.tsx */
+.critical-pulse {
+  animation: alarm-pulse 1.5s infinite ease-in-out;
+  z-index: 10;
+}
+
+/* --- DASHBOARD RESET --- */
+
+body {
+  margin: 0;
+  /* Removed place-items: center to ensure the dashboard fills the screen correctly */
+  display: block; 
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: #020617; /* Matches your App.tsx background */
+}
+
+/* Custom range input styling for the Control Panel */
+input[type=range] {
+  height: 26px;
+  -webkit-appearance: none;
+  margin: 10px 0;
+  width: 100%;
+  background: transparent;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+/* Ensures the slider track looks professional and industrial */
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #38bdf8;
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -6px;
+}

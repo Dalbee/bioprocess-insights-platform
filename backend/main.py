@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 import pandas as pd
@@ -7,6 +7,7 @@ import os
 app = FastAPI()
 
 # CORS Configuration: Allows the React Frontend to talk to this Python Backend
+# Essential for a microservices architecture where services run on different ports.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -33,6 +34,24 @@ current_index = 0
 # This allows the "Twin" to project future values based on recent history
 temp_buffer = []
 
+# New global state for simulation adjustments
+# This mimics the "Control Setpoints" on a Sartorius Biostat® controller
+# ADDED: manual_anomaly flag to track the "Fail O2" button state
+sim_adjustments = {
+    "manual_rpm": 300.0,
+    "manual_anomaly": False 
+}
+
+@app.post("/api/v1/control")
+async def update_simulation(data: dict):
+    """
+    Allows the user to simulate an operator action via the HMI.
+    Captures manual setpoint changes (e.g., RPM) to influence the Digital Twin.
+    """
+    new_rpm = float(data.get("rpm", 300.0))
+    sim_adjustments["manual_rpm"] = new_rpm
+    return {"status": "Control Signal Received", "new_rpm": new_rpm}
+
 @app.get("/api/v1/process-data")
 async def get_process_data():
     """
@@ -48,7 +67,19 @@ async def get_process_data():
     row = df.iloc[current_index].to_dict()
     current_index = (current_index + 1) % len(df)
     
-    # 2. Digital Twin Logic: Calculate the "Predicted" Temperature
+    # 2. CLOSED-LOOP SIMULATION LOGIC:
+    # We use the user's manual RPM to influence biological outcomes.
+    user_rpm = sim_adjustments["manual_rpm"]
+    
+    # Integrated Anomaly Logic
+    # If the manual_anomaly flag is True, we force DO2 to crash to near zero,
+    # simulating a sparger failure or sensor fault.
+    if sim_adjustments["manual_anomaly"]:
+        simulated_do2 = round(row['Dissolved_Oxygen'] * 0.05, 2) # 95% drop
+    else:
+        simulated_do2 = round((user_rpm / 300.0) * row['Dissolved_Oxygen'], 2)
+    
+    # 3. Digital Twin Logic: Calculate the "Predicted" Temperature
     # We maintain a sliding window of the last 5 points to determine the slope
     temp_buffer.append(row['Temperature'])
     if len(temp_buffer) > 5:
@@ -60,22 +91,29 @@ async def get_process_data():
         slope = (temp_buffer[-1] - temp_buffer[0]) / 4
         predicted_temp = round(temp_buffer[-1] + (slope * 2), 2)
 
-    # 3. Calculate Deviation: How far are we from the "Perfect" 37°C and 7.0 pH?
+    # 4. Calculate Deviation: How far are we from the "Perfect" 37°C and 7.0 pH?
     temp_deviation = abs(row['Temperature'] - 37.0)
     ph_deviation = abs(row['pH'] - 7.0)
     
-    # 4. Calculate Health Score: Starts at 100, drops as deviations increase
-    # This simulates a real-time "Batch Quality Index"
-    health_score = 100 - (temp_deviation * 15) - (ph_deviation * 40)
-    health_score = max(0, min(100, health_score)) # Constrain between 0-100
+    # Enhanced Health Score
+    # Now includes the anomaly state in the health calculation.
+    do2_penalty = 50 if sim_adjustments["manual_anomaly"] else 0
     
-    # 5. Anomaly Logic: Flags "Out of Spec" conditions for the UI alert
-    is_anomaly = row['Temperature'] > 40.0 or row['Impeller_Speed'] < 100.0
+    # 5. Calculate Health Score: Starts at 100, drops as deviations increase
+    # This simulates a real-time "Batch Quality Index" that operators would monitor.
+    health_score = 100 - (temp_deviation * 15) - (ph_deviation * 40) - do2_penalty
+    health_score = max(0, min(100, health_score)) 
+    
+    # 6. Anomaly Logic: Flags "Out of Spec" conditions for the UI alert
+    # Now triggers if health is low OR the manual anomaly is active.
+    is_anomaly = health_score < 70 or sim_adjustments["manual_anomaly"]
     
     return {
         "status": "success",
         "data": {
             **row,
+            "Impeller_Speed": user_rpm,
+            "Dissolved_Oxygen": simulated_do2,
             "health_score": round(health_score, 1),
             "is_anomaly": is_anomaly,
             "digital_twin_temp": predicted_temp,
@@ -87,6 +125,7 @@ async def get_process_data():
 async def download_report():
     """
     Serves the raw CSV file to the frontend for the 'Export CSV' functionality.
+    This action is logged by the .NET Audit Service for compliance.
     """
     if os.path.exists(DATA_PATH):
         return FileResponse(
@@ -95,6 +134,45 @@ async def download_report():
             media_type="text/csv"
         )
     return {"error": "File not found"}
+
+@app.post("/api/v1/trigger-anomaly")
+async def trigger_anomaly():
+    """
+    State Manipulation
+    This endpoint manually overrides the simulation logic to 
+    force a failure state in the next data packet.
+    """
+    try:
+        # Explicitly using the dictionary key 
+        # to ensure the global state is updated correctly.
+        sim_adjustments["manual_anomaly"] = True
+        
+        print(f"DEBUG: Anomaly Triggered! Current State: {sim_adjustments}")
+        
+        return {
+            "status": "success", 
+            "message": "O2 Failure Injected",
+            "current_state": sim_adjustments["manual_anomaly"]
+        }
+    except Exception as e:
+        # This will now print the EXACT error to your terminal 
+        # so we can see what's wrong if it fails again.
+        print(f"CRITICAL ERROR in trigger_anomaly: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/reset-anomaly")
+async def reset_anomaly():
+    """
+    RECOVERY LOGIC:
+    Clears the manual failure state, allowing the bioreactor 
+    to return to steady-state operations.
+    """
+    try:
+        sim_adjustments["manual_anomaly"] = False
+        print(f"DEBUG: System Reset! Current State: {sim_adjustments}")
+        return {"status": "success", "message": "Anomaly cleared. System recovering..."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Server Entry Point: Must be at the bottom to ensure all routes are registered
 if __name__ == "__main__":

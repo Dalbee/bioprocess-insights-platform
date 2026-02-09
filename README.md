@@ -7,11 +7,36 @@ This platform simulates a live connection to a **Sartorius Biostat®** controlle
 
 ---
 
+## 📸 Dashboard Preview
+![BIP Dashboard Preview](./assets/dashboard-preview-static.png)
+
+---
+
 ## 🌍 Live Deployment
 The platform is fully orchestrated across a distributed cloud architecture:
 
 - **Frontend Dashboard:** [https://bioprocess-insights-platform.vercel.app/] (Hosted on Vercel)
 - **Backend API:** [https://bioprocess-insights-platform.onrender.com] (Hosted on Render)
+
+---
+## 🏗️ System Architecture
+
+This system utilizes a **Decoupled Triad Architecture**:
+
+1. **HMI Layer (React/TS):** A high-fidelity dashboard with real-time charting and GxP-compliant pulsing alarms. The "Human-Machine Interface"—orchestrates data from both backends into a unified real-time view.
+
+2. **Digital Twin Engine (Python/FastAPI):** Handles high-frequency mathematical projections and physics-based simulations (Oxygen Transfer Rate). The "SCADA" layer—handles high-frequency mathematical projections and Digital Twin logic.
+
+3. **Compliance Service (.NET 10/C#):** An independent audit microservice that records immutable logs of all operator interactions (21 CFR Part 11). The "Compliance" layer—ensures all interactions are logged for regulatory review.
+
+![Bioprocess Insight Platform (BIP) Preview](./assets/bioprocess-system-architecture-diagram.png)
+
+
+### Project Architecture Diagram
+![BIP Architecture Preview](./assets/bioprocess-high-architecture-diagram.png)
+
+![BIP Architecture Preview](./assets/system-architecture-and-data-pipeline-diagram.png)
+---
 
 ### 🏗️ Cloud Architecture
 - **CI/CD:** Automatic deployments triggered via GitHub Actions.
@@ -20,39 +45,30 @@ The platform is fully orchestrated across a distributed cloud architecture:
 
 - **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
 
-### System Architecture & Data Pipeline
-This system utilizes a **Decoupled Triad Architecture**:
-1. **Python Engine:** The "SCADA" layer—handles high-frequency mathematical projections and Digital Twin logic.
-2. **.NET Service:** The "Compliance" layer—ensures all interactions are logged for regulatory review.
-3. **React HMI:** The "Human-Machine Interface"—orchestrates data from both backends into a unified real-time view. 
-
-![BIP Architecture Preview](./assets/system-architecture-and-data-pipeline-diagram.png)
-
-### Project Architecture Diagram
-![BIP Architecture Preview](./assets/bioprocess-high-architecture-diagram.png)
 
 ---
 
-## 📸 Dashboard Preview
-![BIP Dashboard Preview](./assets/dashboard-preview.png)
+## 🚀 Key Features
+
+### 🧪 Core Process Logic
+* **Real-time Data Engine:** Built with **FastAPI** to stream multivariate sensor telemetry (Temperature, pH, Dissolved Oxygen) at a high-frequency 1000ms interval.
+* **Predictive Digital Twin:** Utilizes a moving-window linear regression algorithm to project temperature trends 60 seconds into the future, anticipating shifts before they occur.
+* **Dynamic Physics Simulation:** Features a real-time mathematical correlation between **Impeller RPM** and **Oxygen Mass Transfer**, allowing the simulation to react physically to operator input.
+* **Batch Health Scoring:** An algorithmic viability index that calculates real-time "Golden Batch" deviations based on thermal and chemical setpoint variances.
+* **Automated Anomaly Detection:** Intelligent flagging system for out-of-spec events, such as thermal spikes or mechanical agitation failure.
+
+### 🛡️ Compliance & Data Integrity
+* **GxP Audit Trail:** Integrated **.NET 10 microservice** that records immutable logs of every setpoint change and data export, ensuring 21 CFR Part 11 compliance.
+* **Data Portability:** Secure one-click CSV export engine for generating full batch historical reports for offline analysis.
+
+### 🚨 Industrial UI/UX
+* **Interactive HMI:** Dynamic dashboard featuring live-synced area charts and KPI cards built with **React** and **Recharts**.
+* **Deterministic Alarms:** High-contrast pulsing animations for "Critical" states, engineered to reduce operator reaction time during process excursions.
+* **Dynamic Status Badging:** At-a-glance operational indicators (**OPTIMAL**, **SUB-OPTIMAL**, **CRITICAL**) driven by real-time health score logic.
 
 ---
 
-### 🚀 Key Features
-- **Real-time API:** Built with FastAPI to stream multivariate sensor data every 1000ms.
-- **Digital Twin Projection:** Predictive modeling that anticipates temperature shifts before they occur.
-- **Interactive Dashboard:** Live charting of Temperature, pH, and DO2 using React & Recharts.
-- **Batch Health Scoring:** Algorithmic calculation of batch viability based on setpoint deviations.
-- **Anomaly Detection:** Automated flagging of out-of-spec batches (e.g., thermal spikes or agitation failure).
-- **Data Portability:** One-click CSV export of the bioreactor yield reports.
-
-### 🚨 Industrial UI/UX Features
-- **Deterministic Alarms:** High-contrast pulsing animations for "Critical" batch states, optimized for operator reaction time.
-- **Dynamic Status Badging:** At-a-glance "Optimal / Sub-Optimal / Critical" indicators based on real-time health scoring.
-
----
-
-### 🛡️ GxP Compliance & Audit Trail
+## 🛡️ GxP Compliance & Audit Trail
 In biopharmaceutical manufacturing, **Data Integrity** is non-negotiable (21 CFR Part 11). This platform includes a dedicated **.NET Audit Microservice** that:
 - **Immutable Logging:** Records every operator action (Setpoint changes, Data exports) in a secure audit trail.
 - **Microservice Coordination:** Demonstrates a polyglot architecture where the React HMI communicates with both the Python Engine and the .NET Compliance Service simultaneously.
@@ -219,6 +235,9 @@ The platform features a **Digital Twin** layer that uses a moving-window linear 
 To simulate real-world physics, the platform links Impeller Agitation ($RPM$) to Dissolved Oxygen ($DO_2$):
 $$DO_2 \approx \left(\frac{RPM_{manual}}{300}\right) \times DO_{2,historical}$$
 This allows the Digital Twin to react dynamically when an operator adjusts the slider in the Control Panel.
+
+![BIP Data Piepline and Business Logic](./assets/BIP-data-pipeline-and-business-logic.png)
+
 
 
 ---

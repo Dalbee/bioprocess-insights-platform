@@ -15,8 +15,9 @@ This platform simulates a live connection to a **Sartorius Biostat®** controlle
 ## 🌍 Live Deployment
 The platform is fully orchestrated across a distributed cloud architecture:
 
-- **Frontend Dashboard:** [https://bioprocess-insights-platform.vercel.app/] (Hosted on Vercel)
-- **Backend API:** [https://bioprocess-insights-platform.onrender.com] (Hosted on Render)
+- **Frontend/Live HMI Dashboard:** [https://bioprocess-insights-platform.vercel.app/] (Hosted on Vercel)
+- **Backend API:** [https://bioprocess-insights-platform.onrender.com/api/v1/process-data] (Hosted on Render)
+
 
 ---
 ## 🏗️ System Architecture
@@ -44,6 +45,8 @@ This system utilizes a **Decoupled Triad Architecture**:
 - **Environment Management:** Utilizes `VITE_API_URL` environment variables to dynamically switch between local development and production API endpoints.
 
 - **Cross-Origin Resource Sharing (CORS):** Backend configured to securely communicate with the Vercel-hosted frontend.
+
+- **Containerization:** The .NET Compliance Service is fully containerized using Docker (Multi-stage builds) to ensure environment parity between development and the Render production environment.
 
 
 ---
@@ -145,6 +148,8 @@ Once both services are started, the platform is available at:
 
 This platform utilizes a multi-service API architecture to separate real-time process simulation from regulatory compliance logging.
 
+- **API Documentation (Swagger):** [https://bioprocess-insights-platform.onrender.com/docs]
+
 ### 🐍 Python Data Engine (SCADA & Digital Twin)
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
@@ -198,9 +203,8 @@ To mimic a live Biostat® controller without having a physical bioreactor connec
 Managing three independent services (React on `:5173`, FastAPI on `:8000`, and .NET on `:5197`) presented a significant CORS challenge. 
 - **Solution:** Configured the FastAPI `CORSMiddleware` and the .NET `UseCors` policy to specifically whitelist the frontend origin. This ensures secure, authenticated communication across the different ports of the "Triad."
 
-### 5. Transactional Integrity for GxP Compliance
-A critical requirement was ensuring that process changes in the Python Engine were always documented in the .NET Audit Service.
-- **Solution:** Implemented a **Transaction Coordinator** pattern in the React `handleRpmChange` function. The HMI triggers both the control signal and the audit log simultaneously. If the audit service is unavailable, the system provides a console warning to alert the operator of the integrity gap.
+### 5. Distributed Transaction Simulation for GxP: > 
+Implemented a **Synchronous Hook** pattern in the React HMI. To ensure 21 CFR Part 11 integrity, every POST request to the Python Control Engine is paired with a concurrent POST to the .NET Audit Service. This ensures that a setpoint change never occurs without a corresponding immutable log entry.
 
 ### 6. Real-Time Data Synchronization & Physics Simulation
 To move beyond static playback, I needed the HMI to reflect real-world physics (Oxygen transfer) based on manual operator input.

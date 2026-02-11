@@ -3,12 +3,15 @@
 **A Real-time Bioreactor Monitoring Dashboard for Industrial Fermentation**
 
 ## 🧪 Project Overview
-This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It utilizes a **Triad Microservice Architecture** to bridge the gap between historical data and live operational compliance.
+This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It utilizes a **Triad Microservice Architecture** to bridge the gap between historical data, AI-driven automation, and live operational compliance.
 
 ---
 
 ## 📸 Dashboard Preview
 ![BIP Dashboard Preview](./assets/dashboard-preview-static.png)
+
+## 📸 Dashboard Preview (AI ACTIVE)
+![BIP Dashboard Preview AI Active](./assets/dashboard-preview-static-ai-active.png)
 
 ---
 
@@ -17,6 +20,7 @@ The platform is fully orchestrated across a distributed cloud architecture:
 
 - **Frontend/Live HMI Dashboard:** [https://bioprocess-insights-platform.vercel.app/] (Hosted on Vercel)
 - **Backend API:** [https://bioprocess-insights-platform.onrender.com/api/v1/process-data] (Hosted on Render)
+- **Audit Service:**[https://bioprocess-audit-service.onrender.com/api/audit]
 
 
 ---
@@ -24,11 +28,11 @@ The platform is fully orchestrated across a distributed cloud architecture:
 
 This system utilizes a **Decoupled Triad Architecture**:
 
-1. **HMI Layer (React/TS):** A high-fidelity dashboard with real-time charting and GxP-compliant pulsing alarms. The "Human-Machine Interface"—orchestrates data from both backends into a unified real-time view.
+1. **HMI Layer (React/TS):** A high-fidelity dashboard (Node 22) featuring **E-Signature Roles**, real-time charting and GxP-compliant pulsing alarms. The "Human-Machine Interface"—orchestrates data from both backends into a unified real-time view.
 
-2. **Digital Twin Engine (Python/FastAPI):** Handles high-frequency mathematical projections and physics-based simulations (Oxygen Transfer Rate). The "SCADA" layer—handles high-frequency mathematical projections and Digital Twin logic.
+2. **Digital Twin Engine (Python/FastAPI):** Handles high-frequency mathematical projections, **AI Pilot** automated correction logic, and physics-based simulations (Oxygen Transfer Rate). The "SCADA" layer—handles high-frequency mathematical projections and Digital Twin logic.
 
-3. **Compliance Service (.NET 10/C#):** An independent audit microservice that records immutable logs of all operator interactions (21 CFR Part 11). The "Compliance" layer—ensures all interactions are logged for regulatory review.
+3. **Compliance Service (.NET 10/C#):** An independent audit microservice that records **immutable** logs of all operator interactions (21 CFR Part 11). The "Compliance" layer—ensures all interactions are logged for regulatory review.
 
 ![Bioprocess Insight Platform (BIP) Preview](./assets/bioprocess-system-architecture-diagram.png)
 
@@ -53,21 +57,30 @@ This system utilizes a **Decoupled Triad Architecture**:
 
 ## 🚀 Key Features
 
-### 🧪 Core Process Logic
-* **Real-time Data Engine:** Built with **FastAPI** to stream multivariate sensor telemetry (Temperature, pH, Dissolved Oxygen) at a high-frequency 1000ms interval.
-* **Predictive Digital Twin:** Utilizes a moving-window linear regression algorithm to project temperature trends 60 seconds into the future, anticipating shifts before they occur.
-* **Dynamic Physics Simulation:** Features a real-time mathematical correlation between **Impeller RPM** and **Oxygen Mass Transfer**, allowing the simulation to react physically to operator input.
-* **Batch Health Scoring:** An algorithmic viability index that calculates real-time "Golden Batch" deviations based on thermal and chemical setpoint variances.
-* **Automated Anomaly Detection:** Intelligent flagging system for out-of-spec events, such as thermal spikes or mechanical agitation failure.
+### 🤖 Intelligent Automation & Batch Logic
+* **AI Pilot (Closed-Loop Control):** A newly integrated AI layer that monitors batch health. If Dissolved Oxygen ($DO_2$) drops below critical thresholds, the AI Pilot takes control of the Impeller RPM to restore optimal growth
+  * **Real-time Data Engine:** Built with **FastAPI** to stream multivariate sensor telemetry (Temperature, pH, Dissolved Oxygen) at a high-frequency 1000ms interval.
+  * **Dynamic Physics Simulation:** Features a real-time mathematical correlation between **Impeller RPM** and **Oxygen Mass Transfer**, allowing the simulation to react physically to operator input.
+  * **Batch Health Scoring:** An algorithmic viability index that calculates real-time "Golden Batch" deviations based on thermal and chemical setpoint variances.
+  * **Automated Anomaly Detection:** Intelligent flagging system for out-of-spec events, such as thermal spikes or mechanical agitation failure.
+* **Batch ID Tracking:** Implemented a unique batch numbering system ``(e.g., B2026-001)`` that persists across the API and HMI, ensuring every production run is isolated and identifiable.
+* **Predictive Digital Twin Visualisation:** Utilizes a moving-window linear regression algorithm to project temperature trends 60 seconds into the future, anticipating shifts before they occur. _A predictive area chart overlay that projects future temperature trends using linear regression over a sliding window._
 
-### 🛡️ Compliance & Data Integrity
-* **GxP Audit Trail:** Integrated **.NET 10 microservice** that records immutable logs of every setpoint change and data export, ensuring 21 CFR Part 11 compliance.
+### 🛡️ Compliance, Data Integrity & Digital Signature
+* **Role-Based E-Signatures:** Operators can switch between roles (Lead Scientist, Lab Tech, QA Auditor). Every action is digitally signed and attributed to the active role in the Audit Trail.
+* **Immutable GxP Audit Trail:** Integrated **.NET 10 microservice** (Powered by .NET 10) that records immutable logs capturing Setpoint changes, Anomaly injections, and Data exports with millisecond-precision timestamps ensuring 21 CFR Part 11 compliance.
 * **Data Portability:** Secure one-click CSV export engine for generating full batch historical reports for offline analysis.
+* **21 CFR Part 11 Exports:** Features a dedicated Audit Export engine that generates CSV "receipts" of all verified interactions.
+
+### 🧪 Process Physics & Chaos Engineering
+* **Oxygen Mass Transfer Simulation:** Real-time mathematical correlation between Impeller RPM and Oxygen Mass Transfer ($k_La$).
+* **Anomaly Injection:** A "Chaos" feature allowing operators to manually trigger process failures (O2 deviation) to test system resilience and GxP alarm response.
 
 ### 🚨 Industrial UI/UX
 * **Interactive HMI:** Dynamic dashboard featuring live-synced area charts and KPI cards built with **React** and **Recharts**.
 * **Deterministic Alarms:** High-contrast pulsing animations for "Critical" states, engineered to reduce operator reaction time during process excursions.
 * **Dynamic Status Badging:** At-a-glance operational indicators (**OPTIMAL**, **SUB-OPTIMAL**, **CRITICAL**) driven by real-time health score logic.
+* **AI Active:** Showing when the AI takes over the system to restore balance.
 
 ---
 
@@ -81,39 +94,55 @@ In biopharmaceutical manufacturing, **Data Integrity** is non-negotiable (21 CFR
 
 ## 🛠️ Tech Stack
 - **Backend (Data Engine):** Python 3.12, FastAPI, Pandas
-- **Backend (Compliance/Audit):** .NET 10, C#, ASP.NET Core
+- **Backend (Compliance/Audit):** .NET 10, C#, ASP.NET Core, SQLite
 - **Frontend (HMI):** React (TypeScript), Recharts, Lucide-React
 - **Styling:** CSS-in-JS & GxP Alarm Animations (Custom CSS Keyframes)
-
+- **Containerization:** Docker & Docker Compose (Multi-container orchestration)
 
 ---
 
-## 🚦 Getting Started
-
-### 1. Prerequisites
-- Python 3.10+ 
-- Node.js (v18+)
-- npm or yarn
-
-
-### 2. Backend Setup
-Navigate to the `backend` directory, create a virtual environment, and install dependencies:
+## 🚦 Getting Started (Docker Dev Mode)
+The entire triad is containerized for environment parity. To launch the full platform including the Python API, .NET Service, and React HMI:
 
 ```bash
-cd backend
-python -m venv venv
-# Windows:
-.\venv\Scripts\activate 
-# Mac/Linux:
-source venv/bin/activate
+# 1. Clone the repository
+git clone https://github.com/your-repo/bip-platform.git
 
+# 2. Launch with Docker Compose
+docker-compose up --build
+```
+
+---
+
+## 🚦 Getting Started (Local Development)
+
+To run the full suite locally, you must have **Python 3.10+**, **Node 22**, and the **.NET 8/10 SDK** installed.
+
+### 1. Environment Configuration
+Create a file named ``.env.local`` in the ``/frontend`` directory:
+
+```Code snippet
+VITE_API_URL=http://localhost:8000
+VITE_AUDIT_SERVICE_URL=http://localhost:5197
+```
+
+### 2. Launch Services (Open 3 Terminals)
+- **Terminal 1: Python Engine**
+
+```bash
+cd backend && python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python main.py
 
 ```
 
-### 3. Frontend Setup
-In a new terminal, navigate to the frontend directory:
+- **Terminal 2: .NET Audit Service**
+
+```bash
+cd AuditService
+dotnet run --urls=http://localhost:5197
+```
+- **Terminal 3: React HMI**
 
 ```bash
 cd frontend
@@ -121,26 +150,22 @@ npm install
 npm run dev
 ```
 
-### 4. Compliance Service Setup (.NET)
-In a new terminal, navigate to the audit service directory:
-```bash
-cd AuditService
-dotnet run
-```
+---
 
-### 4. Code Standards & Quality
+### 3. Code Standards & Quality
 - **Type Safety:** Utilizes strict TypeScript interfaces for multivariate sensor data.
 - **Environment Awareness:** Implemented dynamic API routing to switch between `localhost` and `production` cloud endpoints automatically.
 
 
-###  5. 🌐 Local Access
+### 4. 🌐 Local Access
 Once both services are started, the platform is available at:
 
-| Component | URL |
-| :--- | :--- |
-| **BIP Dashboard (Frontend)** | `http://localhost:5173` |
-| **Data Stream (API)** | `http://127.0.0.1:8000/api/v1/process-data` |
+| Component | URL | Port |
+| :--- | :--- | :--- |
+| **BIP Dashboard (Frontend)** | `http://localhost:5173` | 5173 |
+| **Data Stream (API)** | `http://127.0.0.1:8000/api/v1/process-data` | 8000 |
 | **Interactive API Docs** | `http://127.0.0.1:8000/docs` |
+| **Audit Service** | `http://localhost:5197/api/audit` | 5197 |
 
 ---
 
@@ -223,16 +248,22 @@ The health score is a simulated Quality Index ($Q$) calculated based on the devi
 
 $$Health = 100 - (|T_{actual} - 37| \times 15) - (|pH_{actual} - 7| \times 40)$$
 
-### 2. Anomaly Triggers
+
+### 2. AI Pilot Correction Logic
+When $DO_2 < 20\%$, the AI Pilot activates and calculates the necessary RPM boost:$$RPM_{new} = \min(600, RPM_{current} + \Delta Correction)$$
+
+### 3. Anomaly Triggers
 A batch is flagged as an Anomaly if:
 - Temperature > $40.0°C$
 - Impeller Speed < $100.0\ RPM$
 
-### 3. Digital Twin & Predictive Analytics
+### 4. Digital Twin & Predictive Analytics
 The platform features a **Digital Twin** layer that uses a moving-window linear regression to predict process trends:
 - **Calibration Phase:** Upon startup, the system enters a 5-second "Warm-up" to populate the sliding buffer required for accurate slope calculation.
 - **Trend Analysis:** Predicts Temperature 60 seconds into the future based on the current $\Delta T / \Delta t$.
 - **Predictive Alarms:** Early warning system that triggers if the Digital Twin deviates from the safety setpoints before the physical sensors do /reach the threshold.
+
+$$T_{pred} = T_{curr} + \left(\frac{T_{curr} - T_{prev}}{\Delta t}\right) \times 60$$
 
 
 ### 4. Closed-Loop Simulation (Oxygen Transfer)
@@ -249,10 +280,11 @@ This allows the Digital Twin to react dynamically when an operator adjusts the s
 ## 📂 Repository Structure
 
 ```Plaintext
-├── backend/               # FastAPI Server & Digital Twin Logic
+├── backend/               # FastAPI Server, AI Pilot & Digital Twin Logic
 ├── AuditService/          # .NET 10 Compliance & Audit Microservice
 ├── frontend/              # React/TypeScript HMI & Dashboard
 ├── data/                  # Source CSV files (bioreactor-yields.csv)
+├── docker-compose.yml     # Multi-service orchestrator
 ├── .gitignore             # Git exclusion rules
 └── README.md              # Project Documentation
 ```

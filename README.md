@@ -176,16 +176,19 @@ This platform utilizes a multi-service API architecture to separate real-time pr
 - **API Documentation (Swagger):** [https://bioprocess-insights-platform.onrender.com/docs]
 
 ### 🐍 Python Data Engine (SCADA & Digital Twin)
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/api/v1/process-data` | `GET` | **Primary Data Stream:** Returns real-time telemetry, health scores, and twin projections. |
-| `/api/v1/control` | `POST` | **HMI Control:** Receives setpoint changes (e.g., RPM) to update the Digital Twin simulation state. |
-| `/api/v1/download-report` | `GET` | **Export Engine:** Streams the full `bioreactor-yields.csv` file for offline analysis. |
+The core engine managing real-time process logic, AI-driven projections, and simulation states.
+
+| Endpoint | Method | Key Feature | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/v1/process-data` | `GET` | **Real-time Telemetry** (_Primary Data Stream_) | Returns real-time telemetry, health scores, and Digital twin projections. |
+| `/api/v1/control` | `POST` | **AI Pilot & HMI** | Receives setpoint changes (e.g., RPM) to update the Digital Twin simulation state. |
+| `/api/v1/trigger-anomaly` |	`POST` |	**Chaos Engineering** |Injects simulated process failures to test system resilience.|
+| `/api/v1/download-report` | `GET` | **Export Engine** |Streams the full `bioreactor-yields.csv` file for offline analysis. |
 
 ### 🛡️ .NET Compliance Service (GxP Audit)
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/api/audit` | `POST` | **Compliance Logging:** Records immutable logs of operator actions, user IDs, and timestamps for 21 CFR Part 11. |
+| Endpoint | Method | Key Feature | Description |
+| :--- | :--- | :--- | :--- |
+| `/api/audit` | `POST` | **Immutable GxP Logs** | Records operator actions, Role-Based E-Signatures, and timestamps for 21 CFR Part 11. |
 
 ---
 

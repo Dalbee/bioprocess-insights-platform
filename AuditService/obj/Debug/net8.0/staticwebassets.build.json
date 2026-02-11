@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "5D+0NWKoqlHae1+f1UIFlpEwnaY+7ynM7RyYmkar+ZM=",
+  "Source": "AuditService",
+  "BasePath": "_content/AuditService",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

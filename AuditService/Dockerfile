@@ -1,18 +1,17 @@
-# Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
-# Copy the project file and restore dependencies
-COPY ["AuditService.csproj", "./"]
-RUN dotnet restore
-# Copy everything else and build
-COPY . .
-RUN dotnet publish -c Release -o /app/out
-
-# Stage 2: Run
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Use the SDK image to both build and run for development
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 WORKDIR /app
-COPY --from=build /app/out .
-# This tells Render which port to look at
-ENV ASPNETCORE_URLS=http://+:80
-EXPOSE 80
-ENTRYPOINT ["dotnet", "AuditService.dll"]
+
+# Copy the project file and restore dependencies
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copy everything else
+COPY . .
+
+# Expose the port
+EXPOSE 5197
+
+# Tell .NET to watch for changes and run the app
+# This makes it look for the .csproj file instead of a pre-compiled .dll
+ENTRYPOINT ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:5197"]

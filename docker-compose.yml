@@ -1,0 +1,45 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/data  # Maps your local 'data' folder to the container for CSV access
+    networks:
+      - bioprocess-net
+
+  audit-service:
+    build: ./AuditService
+    ports:
+      - "5197:5197"
+    volumes:
+      - ./AuditService:/app          # Map the source code
+      - /app/bin                     # Keep bin isolated inside the container
+      - /app/obj                     # Keep obj isolated inside the container
+    environment:
+      - ConnectionStrings__DefaultConnection=Data Source=audit.db
+    networks:
+      - bioprocess-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./frontend:/app              # Enable Hot Module Replacement (HMR)
+      - /app/node_modules            # Prevent local node_modules from conflicting
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_AUDIT_SERVICE_URL=http://localhost:5197/api/audit
+    depends_on:
+      - backend
+      - audit-service
+    networks:
+      - bioprocess-net
+
+networks:
+  bioprocess-net:
+    driver: bridge

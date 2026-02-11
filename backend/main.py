@@ -16,8 +16,13 @@ app.add_middleware(
 )
 
 # Path Logic: Defines paths relative to this script location
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
+# UPDATED for Docker: We check if we are in a container (where /data exists) 
+# otherwise we use the local relative path.
+if os.path.exists("/data/bioreactor-yields.csv"):
+    DATA_PATH = "/data/bioreactor-yields.csv"
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
 
 # Data Initialization: Loads the CSV into memory or creates an empty fallback
 try:
@@ -29,6 +34,7 @@ except Exception as e:
 
 # Tracker for the sliding data simulation
 current_index = 0
+batch_count = 1  # Track the current batch run
 
 # Digital Twin Memory: Stores the last 5 Temperature points to calculate trends
 # This allows the "Twin" to project future values based on recent history
@@ -59,65 +65,83 @@ async def get_process_data():
     Calculates derived metrics like Health Score and Anomaly detection.
     Integrates a Digital Twin layer for predictive Temperature modeling.
     """
-    global current_index, temp_buffer
+    global current_index, temp_buffer, batch_count
     if df.empty:
         return {"error": "No data available"}
     
-    # 1. Get current row and increment index (loops back to 0 at end of file)
+    # 1. Get current row and increment index
     row = df.iloc[current_index].to_dict()
-    current_index = (current_index + 1) % len(df)
+    
+    # NEW LOGIC: Check if we are about to loop. If so, increment the batch_id.
+    # This simulates the transition from 'Batch A' finishing to 'Batch B' starting.
+    if current_index + 1 >= len(df):
+        current_index = 0
+        batch_count += 1
+    else:
+        current_index += 1
     
     # 2. CLOSED-LOOP SIMULATION LOGIC:
     # We use the user's manual RPM to influence biological outcomes.
     user_rpm = sim_adjustments["manual_rpm"]
     
+    # --- BIOPHYSICAL COUPLING ---
+    # We calculate a 'Heat Friction' effect. If RPM is very high, 
+    # it adds a slight upward bias to the CSV temperature.
+    rpm_heat_bias = (user_rpm - 300) / 1000  # Every 100 RPM adds 0.1°C
+    simulated_temp = round(row['Temperature'] + rpm_heat_bias, 2)
+
     # Integrated Anomaly Logic
-    # If the manual_anomaly flag is True, we force DO2 to crash to near zero,
-    # simulating a sparger failure or sensor fault.
     if sim_adjustments["manual_anomaly"]:
         simulated_do2 = round(row['Dissolved_Oxygen'] * 0.05, 2) # 95% drop
     else:
-        simulated_do2 = round((user_rpm / 300.0) * row['Dissolved_Oxygen'], 2)
+        agitation_factor = (user_rpm / 300.0) ** 0.5
+        simulated_do2 = round(agitation_factor * row['Dissolved_Oxygen'], 2)
+
+    # --- AUTOMATED CORRECTIVE ACTION (AI PILOT) ---
+    auto_pilot_active = False
+    if simulated_do2 < 30.0 and not sim_adjustments["manual_anomaly"]:
+        sim_adjustments["manual_rpm"] = min(600.0, sim_adjustments["manual_rpm"] + 5.0)
+        auto_pilot_active = True
     
     # 3. Digital Twin Logic: Calculate the "Predicted" Temperature
-    # We maintain a sliding window of the last 5 points to determine the slope
-    temp_buffer.append(row['Temperature'])
+    temp_buffer.append(simulated_temp)
     if len(temp_buffer) > 5:
         temp_buffer.pop(0)
     
     predicted_temp = None
     if len(temp_buffer) == 5:
-        # Simple Linear Projection: (Current - 4 steps ago) / time_delta
         slope = (temp_buffer[-1] - temp_buffer[0]) / 4
         predicted_temp = round(temp_buffer[-1] + (slope * 2), 2)
 
-    # 4. Calculate Deviation: How far are we from the "Perfect" 37°C and 7.0 pH?
-    temp_deviation = abs(row['Temperature'] - 37.0)
+    # 4. Calculate Deviation: Using the coupled simulated_temp
+    temp_deviation = abs(simulated_temp - 37.0)
     ph_deviation = abs(row['pH'] - 7.0)
     
     # Enhanced Health Score
-    # Now includes the anomaly state in the health calculation.
     do2_penalty = 50 if sim_adjustments["manual_anomaly"] else 0
-    
-    # 5. Calculate Health Score: Starts at 100, drops as deviations increase
-    # This simulates a real-time "Batch Quality Index" that operators would monitor.
     health_score = 100 - (temp_deviation * 15) - (ph_deviation * 40) - do2_penalty
     health_score = max(0, min(100, health_score)) 
     
-    # 6. Anomaly Logic: Flags "Out of Spec" conditions for the UI alert
-    # Now triggers if health is low OR the manual anomaly is active.
+    # 6. Anomaly Logic: Flags "Out of Spec" conditions
     is_anomaly = health_score < 70 or sim_adjustments["manual_anomaly"]
     
+    # --- ROUNDING & DATA PACKAGING ---
+    # Final data packet with rounded values and NEW Batch ID tracking
     return {
         "status": "success",
         "data": {
             **row,
-            "Impeller_Speed": user_rpm,
-            "Dissolved_Oxygen": simulated_do2,
+            "batch_id": f"B2026-{batch_count:03d}", # Unique identifier for the current production run. Format: B2026-001, B2026-002, etc.
+            "Temperature": simulated_temp,
+            "Impeller_Speed": round(sim_adjustments["manual_rpm"], 1),
+            "Dissolved_Oxygen": round(simulated_do2, 2),
+            "pH": round(row['pH'], 2),             # FIXED GHOST DECIMALS
+            "Yield": round(row['Yield'], 2),       # FIXED GHOST DECIMALS
             "health_score": round(health_score, 1),
             "is_anomaly": is_anomaly,
+            "auto_pilot_active": auto_pilot_active,
             "digital_twin_temp": predicted_temp,
-            "timestamp": pd.Timestamp.now().strftime("%H:%M:%S")
+            "timestamp": pd.Timestamp.now(tz='UTC').strftime("%H:%M:%S") # RESTORED: Standardized UTC timestamp
         }
     }
 

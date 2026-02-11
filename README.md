@@ -6,6 +6,23 @@
 This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It utilizes a **Triad Microservice Architecture** to bridge the gap between historical data, AI-driven automation, and live operational compliance.
 
 ---
+## 📈 Business & Operational Impact
+
+The implementation of the Bioprocess Insight Platform (BIP) directly addresses the high-risk nature of pharmaceutical manufacturing by replacing reactive monitoring with **proactive intelligence**.
+
+### 1. Risk Mitigation & Yield Protection
+By utilizing the **AI Pilot** and **Digital Twin projections**, the system can anticipate a thermal or oxygen-related deviation up to 60 seconds before it occurs. In a production environment, this translates to saving batches worth hundreds of thousands of dollars that would otherwise be lost to process excursions.
+
+### 2. Regulatory Readiness (GxP)
+The platform is engineered with a "Compliance-First" mindset. By automating the **Audit Trail** via a dedicated .NET microservice, the system ensures that every operator interaction is recorded in a 21 CFR Part 11 compliant format, significantly reducing the time required for QA review and regulatory filing.
+
+### 3. Operational Efficiency
+The **Industrial HMI** simplifies multivariate data. By translating complex sensor telemetry into a single **Batch Health Score**, operators can manage multiple bioreactors simultaneously with high-fidelity "At-a-Glance" observability, reducing the cognitive load and potential for human error.
+
+### 4. Technical Scalability
+The **Triad Microservice Architecture** ensures that the system is not a monolith. The Data Engine, Compliance Service, and HMI can be scaled independently, allowing the platform to grow from a single R&D lab to an enterprise-wide manufacturing execution system (MES).
+
+---
 
 ## 📸 Dashboard Preview
 ![BIP Dashboard Preview](./assets/dashboard-preview-static.png)
@@ -92,12 +109,21 @@ In biopharmaceutical manufacturing, **Data Integrity** is non-negotiable (21 CFR
 
 ---
 
-## 🛠️ Tech Stack
-- **Backend (Data Engine):** Python 3.12, FastAPI, Pandas
-- **Backend (Compliance/Audit):** .NET 10, C#, ASP.NET Core, SQLite
-- **Frontend (HMI):** React (TypeScript), Recharts, Lucide-React
-- **Styling:** CSS-in-JS & GxP Alarm Animations (Custom CSS Keyframes)
-- **Containerization:** Docker & Docker Compose (Multi-container orchestration)
+## 🛠️ The Stack (Full-Stack Triad Architecture)
+* **Backends (Polyglot Layer):**
+    * **Data Engine:** Python 3.12, **FastAPI**, Pandas (High-frequency telemetry & AI Pilot logic)
+    * **Compliance/Audit:** **.NET 10**, C#, ASP.NET Core (Immutable GxP logging)
+* **Frontend (Industrial HMI):**
+    * **React 18** (TypeScript), **Node 22**, **Recharts** (Real-time data visualization), **Lucide-React** (Iconography)
+* **Data & Persistence:**
+    * **SQLite** (Local edge storage for audit trails), **Entity Framework Core** (ORM for strict data integrity)
+* **Styling & UX:**
+    * **CSS-in-JS**, **Custom CSS Keyframes** (Deterministic GxP pulsing alarm animations)
+* **Infrastructure & DevOps:**
+    * **Docker & Docker Compose** (Multi-container orchestration for environment parity)
+    * **GitHub Actions** (CI/CD Pipeline)
+* **Cloud Hosting:**
+    * **Vercel** (Frontend), **Render** (Distributed Backends)
 
 ---
 

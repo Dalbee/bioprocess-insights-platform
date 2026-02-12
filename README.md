@@ -297,7 +297,9 @@ $$T_{pred} = T_{curr} + \left(\frac{T_{curr} - T_{prev}}{\Delta t}\right) \times
 
 ### 4. Closed-Loop Simulation (Oxygen Transfer)
 To simulate real-world physics, the platform links Impeller Agitation ($RPM$) to Dissolved Oxygen ($DO_2$):
+
 $$DO_2 \approx \left(\frac{RPM_{manual}}{300}\right) \times DO_{2,historical}$$
+
 This allows the Digital Twin to react dynamically when an operator adjusts the slider in the Control Panel.
 
 ![BIP Data Piepline and Business Logic](./assets/BIP-data-pipeline-and-business-logic.png)

@@ -10,17 +10,24 @@ services:
       - bioprocess-net
 
   audit-service:
-    build: ./AuditService
-    ports:
-      - "5197:5197"
-    volumes:
-      - ./AuditService:/app          # Map the source code
-      - /app/bin                     # Keep bin isolated inside the container
-      - /app/obj                     # Keep obj isolated inside the container
-    environment:
-      - ConnectionStrings__DefaultConnection=Data Source=audit.db
-    networks:
-      - bioprocess-net
+      build:
+        context: ./AuditService  # Change this to point directly to the folder
+        dockerfile: Dockerfile   # Now it looks for the file inside that folder
+      ports:
+        - "5197:5197"
+      volumes:
+      # Map the specific database file so it persists on your host
+        - ./AuditService/audit.db:/app/audit.db
+      # volumes:
+      # - ./AuditService:/app    # Map the source code
+      # # Keep these to prevent local bin/obj from overwriting the container's build
+      # - /app/bin               # Keep bin isolated inside the container
+      # - /app/obj               # Keep obj isolated inside the container
+      # - /app/out               # Add this! It protects the published DLL
+      environment:
+        - ConnectionStrings__DefaultConnection=Data Source=audit.db
+      networks:
+        - bioprocess-net
 
   frontend:
     build: ./frontend

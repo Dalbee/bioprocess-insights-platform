@@ -189,6 +189,7 @@ function App() {
       boxSizing: 'border-box', 
       overflow: 'hidden' // Prevents unnecessary scrollbars
     }}>
+
       
       {/* Header Section */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
@@ -235,9 +236,7 @@ function App() {
 
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           
-          {/* DIGITAL SIGNATURE SELECTOR: 
-              Enhanced UI for user accountability. 
-          */}
+          {/* DIGITAL SIGNATURE SELECTOR: Enhanced UI for user accountability */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -297,7 +296,6 @@ function App() {
           color={latest?.auto_pilot_active ? "#3b82f6" : "#fbbf24"}
           isAuto={latest?.auto_pilot_active}
         />
-        
         <StatCard label="Dissolved O₂" value={latest?.Dissolved_Oxygen} unit="%" icon={<Droplets color="#818cf8"/>} color="#818cf8" />
         <StatCard label="Batch Health" value={latest?.health_score} unit="%" icon={<CheckCircle color={latest?.health_score > 85 ? "#4ade80" : "#ef4444"}/>} color={latest?.health_score > 85 ? "#4ade80" : "#ef4444"} />
       </div>
@@ -322,9 +320,18 @@ function App() {
                   </div>
                )}
 
+               {/* REPOSITIONED: Digital Twin Status now lives inside chart box with calibration animation */}
                {showTwin && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.65rem', fontWeight: 700, color: '#818cf8', background: '#818cf815', padding: '4px 10px', borderRadius: '6px', border: '1px solid #818cf844' }}>
-                    <Monitor size={12} /> DIGITAL TWIN ACTIVE
+                  <div style={{ 
+                    display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.65rem', fontWeight: 700, 
+                    color: latest?.digital_twin_temp ? '#818cf8' : '#64748b', 
+                    background: latest?.digital_twin_temp ? '#818cf815' : '#1e293b', 
+                    padding: '4px 10px', borderRadius: '6px', 
+                    border: latest?.digital_twin_temp ? '1px solid #818cf844' : '1px solid #334155',
+                    transition: 'all 0.3s ease'
+                  }}>
+                    {latest?.digital_twin_temp ? <Monitor size={12} /> : <Activity size={12} className="spinning-slow" />}
+                    {latest?.digital_twin_temp ? "DIGITAL TWIN ACTIVE" : "CALIBRATING TWIN..."}
                   </div>
                )}
             </div>

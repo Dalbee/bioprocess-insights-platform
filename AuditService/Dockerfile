@@ -1,25 +1,23 @@
-# Use the SDK image to build the code
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# 1. Copy the csproj from the subfolder to the current container dir
-COPY AuditService/*.csproj ./
-# 2. Restore specifically for that project
+# Copy csproj and restore
+COPY *.csproj ./
 RUN dotnet restore
 
-# 3. Copy the rest of the AuditService source code
-COPY AuditService/ .
-
-# 4. Build and Publish
-RUN dotnet publish -c Release -o out
+# Copy everything else and build
+COPY . .
+# We publish to a folder OUTSIDE the /app path that gets mounted
+RUN dotnet publish -c Release -o /publish
 
 # --- Runtime Stage ---
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/out .
+# Copy from the /publish folder of the build stage
+COPY --from=build /publish .
 
-# Ensure the app listens on the port Render expects
 ENV ASPNETCORE_URLS=http://+:5197
 EXPOSE 5197
 
+# This will now find the DLL in /app because we copied it there in the image
 ENTRYPOINT ["dotnet", "AuditService.dll"]

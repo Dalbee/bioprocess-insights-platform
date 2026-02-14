@@ -13,6 +13,22 @@ var dbFolder = Path.Combine(AppContext.BaseDirectory, "db");
 if (!Directory.Exists(dbFolder)) Directory.CreateDirectory(dbFolder);
 var dbPath = Path.Combine(dbFolder, "audit.db");
 
+/**
+ * FREE TIER SEED LOGIC:
+ * Because Render Free Tier storage is ephemeral, we check if the active 
+ * database exists. If not, we copy the "Golden Image" pushed to GitHub.
+ */
+if (!File.Exists(dbPath))
+{
+    // Look for the audit.db that was bundled in the Docker build root
+    var seedPath = Path.Combine(AppContext.BaseDirectory, "audit.db");
+    if (File.Exists(seedPath))
+    {
+        File.Copy(seedPath, dbPath);
+        Console.WriteLine("--> Portfolio Seed: 646 historical records restored to active session.");
+    }
+}
+
 builder.Services.AddDbContext<AuditContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
@@ -23,7 +39,8 @@ builder.Services.AddCors(options => {
         policy => {
             // In Production, we specify the Vercel URL. 
             // In Development, we allow the local Vite port.
-            policy.WithOrigins("http://localhost:5173", "https://your-frontend-name.vercel.app") 
+            // MODIFIED: Replace placeholder with your real portfolio URL
+            policy.WithOrigins("http://localhost:5173", "https://bioprocess-insights-platform.vercel.app") 
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .WithExposedHeaders("Content-Disposition"); // ESSENTIAL for "Export" to allow browser to see filename

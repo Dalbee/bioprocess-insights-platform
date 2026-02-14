@@ -16,8 +16,8 @@ services:
       ports:
         - "5197:5197"
       volumes:
-      # Map the specific database file so it persists on your host
-        - ./AuditService/audit.db:/app/audit.db
+      # UPDATED: Mapping the 'db' folder for cleaner persistence and Linux compatibility
+        - ./AuditService/db:/app/db
       # volumes:
       # - ./AuditService:/app    # Map the source code
       # # Keep these to prevent local bin/obj from overwriting the container's build
@@ -25,7 +25,8 @@ services:
       # - /app/obj               # Keep obj isolated inside the container
       # - /app/out               # Add this! It protects the published DLL
       environment:
-        - ConnectionStrings__DefaultConnection=Data Source=audit.db
+        # UPDATED: Path updated to match the internal /app/db location
+        - ConnectionStrings__DefaultConnection=Data Source=db/audit.db
       networks:
         - bioprocess-net
 

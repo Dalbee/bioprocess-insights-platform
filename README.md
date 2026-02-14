@@ -69,6 +69,8 @@ This system utilizes a **Decoupled Triad Architecture**:
 
 - **Containerization:** The .NET Compliance Service is fully containerized using Docker (Multi-stage builds) to ensure environment parity between development and the Render production environment.
 
+- **Build-Time Injection:** Frontend endpoints are injected during the Vercel build process via `VITE_` prefixed variables. This ensures the React HMI is hard-wired to the correct Render production instances upon deployment, eliminating "localhost" leakages in the cloud.
+
 
 ---
 
@@ -77,7 +79,7 @@ This system utilizes a **Decoupled Triad Architecture**:
 ### 🤖 Intelligent Automation & Batch Logic
 * **AI Pilot (Closed-Loop Control):** A newly integrated AI layer that monitors batch health. If Dissolved Oxygen ($DO_2$) drops below critical thresholds, the AI Pilot takes control of the Impeller RPM to restore optimal growth
   * **Real-time Data Engine:** Built with **FastAPI** to stream multivariate sensor telemetry (Temperature, pH, Dissolved Oxygen) at a high-frequency 1000ms interval.
-  * **Dynamic Physics Simulation:** Features a real-time mathematical correlation between **Impeller RPM** and **Oxygen Mass Transfer**, allowing the simulation to react physically to operator input.
+  * **Dynamic Physics Simulation:** Features a real-time mathematical correlation between **Impeller RPM** and **Oxygen Mass Transfer** ($k_La$), allowing the simulation to react physically to operator input.
   * **Batch Health Scoring:** An algorithmic viability index that calculates real-time "Golden Batch" deviations based on thermal and chemical setpoint variances.
   * **Automated Anomaly Detection:** Intelligent flagging system for out-of-spec events, such as thermal spikes or mechanical agitation failure.
 * **Batch ID Tracking:** Implemented a unique batch numbering system ``(e.g., B2026-001)`` that persists across the API and HMI, ensuring every production run is isolated and identifiable.
@@ -112,7 +114,7 @@ In biopharmaceutical manufacturing, **Data Integrity** is non-negotiable (21 CFR
 ## 🛠️ The Stack (Full-Stack Triad Architecture)
 * **Backends (Polyglot Layer):**
     * **Data Engine:** Python 3.12, **FastAPI**, Pandas (High-frequency telemetry & AI Pilot logic)
-    * **Compliance/Audit:** **.NET 10**, C#, ASP.NET Core (Immutable GxP logging)
+    * **Compliance/Audit:** **.NET 8**, C#, ASP.NET Core (Immutable GxP logging)
 * **Frontend (Industrial HMI):**
     * **React 18** (TypeScript), **Node 22**, **Recharts** (Real-time data visualization), **Lucide-React** (Iconography)
 * **Data & Persistence:**
@@ -245,9 +247,8 @@ Sent simultaneously with control signals to ensure data integrity.
 One of the primary challenges was managing two distinct environments (Python/FastAPI and Node/Vite) within a single repository. 
 - **Solution:** Implemented a structured directory approach, isolating the `venv` within the `/backend` and `node_modules` within the `/frontend`. This ensures that dependency conflicts are non-existent and the root directory remains clean.
 
-### 2. Relative Path Resolution
-Since the backend service runs from within the `/backend` folder but needs to access data in the root-level `/data` folder, standard file paths would often break.
-- **Solution:** Used Python's `os.path.abspath(__file__)` to create a dynamic `BASE_DIR`. This allows the application to resolve the CSV path correctly regardless of whether the script is launched from the root or the subfolder / (regardless of the environment).
+### 2. Containerized Path Resolution (Docker Parity):
+To ensure the Python engine works identically in local venv and a Docker container, I implemented a robust path resolution logic using `os.path.abspath(__file__)`. This allows the engine to locate the `bioreactor-yields.csv` within its own service directory, satisfying the **Twelve-Factor App** principle of a self-contained service and solving the common "Docker Build Context" isolation issue.
 
 ### 3. Real-Time Data Simulation
 To mimic a live Biostat® controller without having a physical bioreactor connected, I implemented a global index tracker in FastAPI.

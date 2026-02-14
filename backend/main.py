@@ -16,12 +16,18 @@ app.add_middleware(
 )
 
 # Path Logic: Defines paths relative to this script location
-# UPDATED for Docker: We check if we are in a container (where /data exists) 
-# otherwise we use the local relative path.
+# UPDATED for Docker: We check several locations to ensure the CSV is found
+# in both local development and various cloud container structures.
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Priority 1: Check root /data (Common in many Docker setups)
 if os.path.exists("/data/bioreactor-yields.csv"):
     DATA_PATH = "/data/bioreactor-yields.csv"
+# Priority 2: Check current folder /data (Standard Docker COPY behavior)
+elif os.path.exists(os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")):
+    DATA_PATH = os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")
+# Priority 3: Check parent ../data (Local development fallback)
 else:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
 
 # Data Initialization: Loads the CSV into memory or creates an empty fallback
@@ -131,7 +137,7 @@ async def get_process_data():
         "status": "success",
         "data": {
             **row,
-            "batch_id": f"B2026-{batch_count:03d}", # Unique identifier for the current production run. Format: B2026-001, B2026-002, etc.
+            "batch_id": f"B2026-{batch_count:03d}", # Unique identifier Format: B2026-001, B2026-002, etc.
             "Temperature": simulated_temp,
             "Impeller_Speed": round(sim_adjustments["manual_rpm"], 1),
             "Dissolved_Oxygen": round(simulated_do2, 2),
@@ -170,9 +176,7 @@ async def trigger_anomaly():
         # Explicitly using the dictionary key 
         # to ensure the global state is updated correctly.
         sim_adjustments["manual_anomaly"] = True
-        
         print(f"DEBUG: Anomaly Triggered! Current State: {sim_adjustments}")
-        
         return {
             "status": "success", 
             "message": "O2 Failure Injected",

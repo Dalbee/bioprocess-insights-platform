@@ -111,21 +111,25 @@ In biopharmaceutical manufacturing, **Data Integrity** is non-negotiable (21 CFR
 
 ---
 
-## 🛠️ The Stack (Full-Stack Triad Architecture)
-* **Backends (Polyglot Layer):**
-    * **Data Engine:** Python 3.12, **FastAPI**, Pandas (High-frequency telemetry & AI Pilot logic)
-    * **Compliance/Audit:** **.NET 8**, C#, ASP.NET Core (Immutable GxP logging)
-* **Frontend (Industrial HMI):**
-    * **React 18** (TypeScript), **Node 22**, **Recharts** (Real-time data visualization), **Lucide-React** (Iconography)
-* **Data & Persistence:**
-    * **SQLite** (Local edge storage for audit trails), **Entity Framework Core** (ORM for strict data integrity)
-* **Styling & UX:**
-    * **CSS-in-JS**, **Custom CSS Keyframes** (Deterministic GxP pulsing alarm animations)
-* **Infrastructure & DevOps:**
-    * **Docker & Docker Compose** (Multi-container orchestration for environment parity)
-    * **GitHub Actions** (CI/CD Pipeline)
-* **Cloud Hosting:**
-    * **Vercel** (Frontend), **Render** (Distributed Backends)
+### 🛠️ Full-Stack Triad Architecture
+
+**Backends (Polyglot Layer):**
+* **Data Engine:** Python 3.12, FastAPI, Pandas (High-frequency telemetry & Digital Twin logic)
+* **Compliance/Audit:** .NET 8, C#, ASP.NET Core (Immutable GxP logging & EF Core schema enforcement)
+
+**Frontend (Industrial HMI):**
+* **Stack:** React 18 (TS), Node 22, Recharts (Low-latency visualization)
+* **Feature:** Deterministic pulsing alarm states for critical process excursions
+
+**Data & Persistence:**
+* **Storage:** SQLite (Local Edge/R&D) & Stateless APIs (Cloud Production)
+* **Optimization:** Encapsulated CSV datasets for high-speed containerized data-locality
+* **Integrity:** EF Core for GxP-compliant data mapping
+
+**Infrastructure & DevOps:**
+* **Orchestration:** Triad Docker Orchestration (Independent Dockerfiles for service isolation)
+* **CI/CD & Hosting:** GitHub Actions; Vercel (Frontend) & Render (Distributed Backends)
+* **Build Logic:** Optimized Docker Build Contexts for local engine data-parity
 
 ---
 

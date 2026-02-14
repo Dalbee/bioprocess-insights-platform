@@ -16,26 +16,31 @@ app.add_middleware(
 )
 
 # Path Logic: Defines paths relative to this script location
-# UPDATED for Docker: We check several locations to ensure the CSV is found
-# in both local development and various cloud container structures.
+# UPDATED for Docker: Since main.py is in 'backend/' and CSV is in 'backend/data/',
+# we use the direct relative path from this file's directory.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Priority 1: Check root /data (Common in many Docker setups)
-if os.path.exists("/data/bioreactor-yields.csv"):
+# Define the specific internal path
+INTERNAL_DATA_PATH = os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")
+
+if os.path.exists(INTERNAL_DATA_PATH):
+    DATA_PATH = INTERNAL_DATA_PATH
+elif os.path.exists("/data/bioreactor-yields.csv"):
     DATA_PATH = "/data/bioreactor-yields.csv"
-# Priority 2: Check current folder /data (Standard Docker COPY behavior)
-elif os.path.exists(os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")):
-    DATA_PATH = os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")
-# Priority 3: Check parent ../data (Local development fallback)
 else:
+    # Fallback for local development if running from the root folder
     DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
 
 # Data Initialization: Loads the CSV into memory or creates an empty fallback
 try:
     df = pd.read_csv(DATA_PATH)
+    print(f"-----------------------------------------------")
     print(f"API Online: Loaded {len(df)} rows from {DATA_PATH}")
+    print(f"-----------------------------------------------")
 except Exception as e:
+    print(f"-----------------------------------------------")
     print(f"Error: Could not find CSV at {DATA_PATH}")
+    print(f"-----------------------------------------------")
     df = pd.DataFrame()
 
 # Tracker for the sliding data simulation

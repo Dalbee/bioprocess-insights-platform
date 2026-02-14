@@ -20,26 +20,35 @@ app.add_middleware(
 # we use the direct relative path from this file's directory.
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Define the specific internal path
+# --- DEFINITIVE PATH RESOLUTION ---
+# 1. Try local path (Works if folder is moved inside backend)
 INTERNAL_DATA_PATH = os.path.join(BASE_DIR, "data", "bioreactor-yields.csv")
+# 2. Try absolute root path (Common in some Docker setups)
+ROOT_DATA_PATH = "/app/data/bioreactor-yields.csv"
+# 3. Fallback for your current local dev structure
+DEV_DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
 
 if os.path.exists(INTERNAL_DATA_PATH):
     DATA_PATH = INTERNAL_DATA_PATH
-elif os.path.exists("/data/bioreactor-yields.csv"):
-    DATA_PATH = "/data/bioreactor-yields.csv"
+elif os.path.exists(ROOT_DATA_PATH):
+    DATA_PATH = ROOT_DATA_PATH
+elif os.path.exists(DEV_DATA_PATH):
+    DATA_PATH = DEV_DATA_PATH
 else:
-    # Fallback for local development if running from the root folder
-    DATA_PATH = os.path.join(BASE_DIR, "..", "data", "bioreactor-yields.csv")
+    # This will help us see exactly what Docker sees in the logs
+    DATA_PATH = INTERNAL_DATA_PATH 
 
 # Data Initialization: Loads the CSV into memory or creates an empty fallback
 try:
     df = pd.read_csv(DATA_PATH)
     print(f"-----------------------------------------------")
-    print(f"API Online: Loaded {len(df)} rows from {DATA_PATH}")
+    print(f"✅ API Online: Loaded {len(df)} rows from {DATA_PATH}")
     print(f"-----------------------------------------------")
 except Exception as e:
     print(f"-----------------------------------------------")
-    print(f"Error: Could not find CSV at {DATA_PATH}")
+    print(f"❌ Error: Could not find CSV at {DATA_PATH}")
+    print(f"DEBUG: I am running in {BASE_DIR}")
+    print(f"DEBUG: Folders here: {os.listdir(BASE_DIR)}")
     print(f"-----------------------------------------------")
     df = pd.DataFrame()
 
@@ -178,8 +187,6 @@ async def trigger_anomaly():
     force a failure state in the next data packet.
     """
     try:
-        # Explicitly using the dictionary key 
-        # to ensure the global state is updated correctly.
         sim_adjustments["manual_anomaly"] = True
         print(f"DEBUG: Anomaly Triggered! Current State: {sim_adjustments}")
         return {
@@ -188,8 +195,6 @@ async def trigger_anomaly():
             "current_state": sim_adjustments["manual_anomaly"]
         }
     except Exception as e:
-        # This will now print the EXACT error to your terminal 
-        # so we can see what's wrong if it fails again.
         print(f"CRITICAL ERROR in trigger_anomaly: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -207,9 +212,7 @@ async def reset_anomaly():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Server Entry Point: Must be at the bottom to ensure all routes are registered
 if __name__ == "__main__":
     import uvicorn
-    # Render provides a $PORT environment variable; we default to 8000 for local testing
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)

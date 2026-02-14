@@ -8,6 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the simulation logic and API code
+# This copies everything in /backend (including the new /data folder) into /app
 COPY . .
 
 # Expose the FastAPI port

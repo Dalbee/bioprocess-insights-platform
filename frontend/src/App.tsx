@@ -199,7 +199,13 @@ function App() {
               Bioprocess <span style={{ color: '#38bdf8' }}>Insight Platform</span>
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
-              <p style={{ color: '#94a3b8', margin: 0 }}>Sartorius Biostat® Simulation Engine v1.0</p>
+              <p style={{ color: '#94a3b8', margin: 0 }}>Universal Bioprocess Simulation Core (UBSC) v1.0</p>
+                {/** * UBSC ENGINE v1.0
+                * ---------------------------------------------------------
+                * A vendor-agnostic HMI (Human Machine Interface) designed 
+                * for real-time bioprocess monitoring and digital twin 
+                * projection. Integrates GxP-compliant audit logging.
+                */}
               {/* BATCH IDENTIFIER: Dynamically displays the current production run ID */}
               {latest?.batch_id && (
                 <span style={{ 

@@ -3,7 +3,7 @@
 **A Real-time Bioreactor Monitoring Dashboard for Industrial Fermentation**
 
 ## 🧪 Project Overview
-This platform simulates a live connection to a **Sartorius Biostat®** controller, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It utilizes a **Triad Microservice Architecture** to bridge the gap between historical data, AI-driven automation, and live operational compliance.
+This platform simulates a live connection to an **Industrial Bioreactor Controller**, providing real-time data visualization and automated anomaly detection for critical process parameters (CPPs). It utilizes a **Triad Microservice Architecture** to bridge the gap between historical data, AI-driven automation, and live operational compliance.
 
 ---
 ## 📈 Business & Operational Impact
@@ -49,7 +49,7 @@ This system utilizes a **Decoupled Triad Architecture**:
 
 2. **Digital Twin Engine (Python/FastAPI):** Handles high-frequency mathematical projections, **AI Pilot** automated correction logic, and physics-based simulations (Oxygen Transfer Rate). The "SCADA" layer—handles high-frequency mathematical projections and Digital Twin logic.
 
-3. **Compliance Service (.NET 10/C#):** An independent audit microservice that records **immutable** logs of all operator interactions (21 CFR Part 11). The "Compliance" layer—ensures all interactions are logged for regulatory review.
+3. **Compliance Service (.NET 8/C#):** An independent audit microservice that records **immutable** logs of all operator interactions (21 CFR Part 11). The "Compliance" layer—ensures all interactions are logged for regulatory review.
 
 ![Bioprocess Insight Platform (BIP) Preview](./assets/bioprocess-system-architecture-diagram.png)
 
@@ -87,7 +87,7 @@ This system utilizes a **Decoupled Triad Architecture**:
 
 ### 🛡️ Compliance, Data Integrity & Digital Signature
 * **Role-Based E-Signatures:** Operators can switch between roles (Lead Scientist, Lab Tech, QA Auditor). Every action is digitally signed and attributed to the active role in the Audit Trail.
-* **Immutable GxP Audit Trail:** Integrated **.NET 10 microservice** (Powered by .NET 10) that records immutable logs capturing Setpoint changes, Anomaly injections, and Data exports with millisecond-precision timestamps ensuring 21 CFR Part 11 compliance.
+* **Immutable GxP Audit Trail:** Integrated **.NET 8 microservice** (Powered by .NET 8) that records immutable logs capturing Setpoint changes, Anomaly injections, and Data exports with millisecond-precision timestamps ensuring 21 CFR Part 11 compliance.
 * **Data Portability:** Secure one-click CSV export engine for generating full batch historical reports for offline analysis.
 * **21 CFR Part 11 Exports:** Features a dedicated Audit Export engine that generates CSV "receipts" of all verified interactions.
 
@@ -148,7 +148,7 @@ docker-compose up --build
 
 ## 🚦 Getting Started (Local Development)
 
-To run the full suite locally, you must have **Python 3.10+**, **Node 22**, and the **.NET 8/10 SDK** installed.
+To run the full suite locally, you must have **Python 3.10+**, **Node 22**, and the **.NET 8 SDK** installed.
 
 ### 1. Environment Configuration
 Create a file named ``.env.local`` in the ``/frontend`` directory:
@@ -187,6 +187,7 @@ npm run dev
 ### 3. Code Standards & Quality
 - **Type Safety:** Utilizes strict TypeScript interfaces for multivariate sensor data.
 - **Environment Awareness:** Implemented dynamic API routing to switch between `localhost` and `production` cloud endpoints automatically.
+- **Strict Type Mapping:** Integrated shared TypeScript interfaces and C# DTOs (Data Transfer Objects) to ensure telemetry data maintains 100% schema integrity as it travels through the Triad.
 
 
 ### 4. 🌐 Local Access
@@ -255,14 +256,14 @@ One of the primary challenges was managing two distinct environments (Python/Fas
 To ensure the Python engine works identically in local venv and a Docker container, I implemented a robust path resolution logic using `os.path.abspath(__file__)`. This allows the engine to locate the `bioreactor-yields.csv` within its own service directory, satisfying the **Twelve-Factor App** principle of a self-contained service and solving the common "Docker Build Context" isolation issue.
 
 ### 3. Real-Time Data Simulation
-To mimic a live Biostat® controller without having a physical bioreactor connected, I implemented a global index tracker in FastAPI.
+To mimic a live Industrial PLC (Programmable Logic Controller) without having a physical bioreactor connected, I implemented a global index tracker in FastAPI.
 - **Logic:** The API iterates through historical CSV rows on every request, calculates "derived metrics" (Health Score) on the fly, and loops back to the start, providing a continuous "live" data stream for the frontend to consume.
 
 ### 4. Cross-Origin Resource Sharing (CORS) in a Triad Architecture
 Managing three independent services (React on `:5173`, FastAPI on `:8000`, and .NET on `:5197`) presented a significant CORS challenge. 
 - **Solution:** Configured the FastAPI `CORSMiddleware` and the .NET `UseCors` policy to specifically whitelist the frontend origin. This ensures secure, authenticated communication across the different ports of the "Triad."
 
-### 5. Distributed Transaction Simulation for GxP: > 
+### 5. Distributed Transaction Simulation for GxP:
 Implemented a **Synchronous Hook** pattern in the React HMI. To ensure 21 CFR Part 11 integrity, every POST request to the Python Control Engine is paired with a concurrent POST to the .NET Audit Service. This ensures that a setpoint change never occurs without a corresponding immutable log entry.
 
 ### 6. Real-Time Data Synchronization & Physics Simulation
@@ -271,7 +272,7 @@ To move beyond static playback, I needed the HMI to reflect real-world physics (
 
 ### 7. Dynamic Visual Feedback for Operator Safety
 Implementing "At-a-glance" observability required the HMI to translate complex health scores into immediate visual cues.
-- **Solution:** Developed a conditional CSS engine that monitors the `health_score`. When the score drops below 70%, it dynamically applies a `critical-pulse` keyframe animation to the status badge, mimicking the physical LED alarm towers found on industrial Biostat® controllers.
+- **Solution:** Developed a conditional CSS engine that monitors the `health_score`. When the score drops below 70%, it dynamically applies a `critical-pulse` keyframe animation to the status badge, mimicking physical Industrial Signal Towers (Andon lights).
 
 ---
 
@@ -300,7 +301,7 @@ The platform features a **Digital Twin** layer that uses a moving-window linear 
 $$T_{pred} = T_{curr} + \left(\frac{T_{curr} - T_{prev}}{\Delta t}\right) \times 60$$
 
 
-### 4. Closed-Loop Simulation (Oxygen Transfer)
+### 5. Closed-Loop Simulation (Oxygen Transfer)
 To simulate real-world physics, the platform links Impeller Agitation ($RPM$) to Dissolved Oxygen ($DO_2$):
 
 $$DO_2 \approx \left(\frac{RPM_{manual}}{300}\right) \times DO_{2,historical}$$
@@ -317,7 +318,7 @@ This allows the Digital Twin to react dynamically when an operator adjusts the s
 
 ```Plaintext
 ├── backend/               # FastAPI Server, AI Pilot & Digital Twin Logic
-├── AuditService/          # .NET 10 Compliance & Audit Microservice
+├── AuditService/          # .NET 8 Compliance & Audit Microservice
 ├── frontend/              # React/TypeScript HMI & Dashboard
 ├── data/                  # Source CSV files (bioreactor-yields.csv)
 ├── docker-compose.yml     # Multi-service orchestrator
